@@ -1,19 +1,18 @@
 const Expense = require("../models/Expense");
 const User = require("../models/User");
-
+const sequelize = require("../config/database");
 const { categorizeExpense } = require("../services/geminiService");
 // ADD EXPENSE
 const addExpense = async (req, res) => {
+    const transaction = await sequelize.transaction();
 
     try {
 
-        const {
-            amount,
-            description           
-        } = req.body;
+        const {  amount, description } = req.body;
 
 
         if (!amount || !description) {
+            await transaction.rollback();
 
             return res.status(400).json({
                 message:
@@ -37,14 +36,18 @@ const addExpense = async (req, res) => {
 
             userId: req.user.id
 
+        },{
+            transaction
         });
 
         await User.increment(
             { totalexpenses: amount },
-            { where: { id: req.user.id } }
+            { where: { id: req.user.id },
+             transaction }
         );
         
-
+        // Both operations succeeded
+        await transaction.commit();
 
         res.status(201).json({
 
@@ -56,6 +59,8 @@ const addExpense = async (req, res) => {
 
 
     } catch (error) {
+        // Undo everything if anything fails
+        await transaction.rollback();
 
         console.error(
             "Add expense error:",
@@ -121,6 +126,7 @@ const getExpenses = async (req, res) => {
 
 // DELETE EXPENSE
 const deleteExpense = async (req, res) => {
+    const transaction = await sequelize.transaction();
 
     try {
 
@@ -133,12 +139,14 @@ const deleteExpense = async (req, res) => {
                 where: {
                     id,
                     userId: req.user.id
-                }
+                },
+                transaction
 
             });
 
 
         if (!expense) {
+            await transaction.rollback();
 
             return res.status(404).json({
 
@@ -148,9 +156,28 @@ const deleteExpense = async (req, res) => {
             });
 
         }
+        // Save amount before deleting the expense
+        const amount = expense.amount;
 
+        // Delete expense
+        await expense.destroy({
+            transaction
+        });      
 
-        await expense.destroy();
+        // Decrease user's total expenses
+        await User.decrement(
+            {
+                totalexpenses: amount
+            },
+            {
+                where: {
+                    id: req.user.id
+                },
+                transaction
+            }
+        );
+
+        await transaction.commit();
 
 
         res.status(200).json({
@@ -162,6 +189,7 @@ const deleteExpense = async (req, res) => {
 
 
     } catch (error) {
+        await transaction.rollback();
 
         console.error(
             "Delete expense error:",

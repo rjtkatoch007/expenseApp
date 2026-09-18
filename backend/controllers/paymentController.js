@@ -2,6 +2,7 @@ const { Cashfree } = require("cashfree-pg");
 const Order = require("../models/Order");
 const User = require("../models/User");
 
+
 const mode =
     process.env.CASHFREE_MODE === "production"
         ? Cashfree.PRODUCTION
@@ -16,6 +17,7 @@ const cashfree = new Cashfree(
 
 // CREATE ORDER
 const createPaymentOrder = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const userId = req.user.id;
 
@@ -31,12 +33,16 @@ const createPaymentOrder = async (req, res) => {
 
         const orderId = `premium_${userId}_${Date.now()}`;
 
+
         // 1. Create our own order as PENDING
         const order = await Order.create({
             orderId,
             amount,
             status: "PENDING",
             userId
+        },
+        {
+            transaction
         });
 
         // 2. Create order at Cashfree
@@ -79,9 +85,10 @@ const createPaymentOrder = async (req, res) => {
             orderId: orderId,
             paymentSessionId: cashfreeOrder.payment_session_id
         });
+        await transaction.commit();
 
     } catch (error) {
-
+        await transaction.rollback();
         console.log(
             "Create payment order error:",
             error.response?.data || error.message
@@ -150,7 +157,10 @@ const getPaymentStatus = async (req, res) => {
 
             await order.update({
                 status: "PAID"
-            });
+            },
+        {
+            transaction
+        });
             
             await User.update(
         {
@@ -159,9 +169,14 @@ const getPaymentStatus = async (req, res) => {
         {
             where: {
                 id: req.user.id
-            }
+            },
+        
+            transaction
+        
         }
     );
+
+     
 
             return res.status(200).json({
                 orderId,
@@ -184,7 +199,7 @@ const getPaymentStatus = async (req, res) => {
                 message: "TRANSACTION FAILED"
             });
         }
-
+        
 
         // Still pending
         return res.status(200).json({
@@ -192,9 +207,10 @@ const getPaymentStatus = async (req, res) => {
             status: "PENDING",
             message: "Payment is still pending"
         });
+        await transaction.commit();
 
     } catch (error) {
-
+        await transaction.rollback();
         console.log(
             "Payment status error:",
             error.response?.data || error.message

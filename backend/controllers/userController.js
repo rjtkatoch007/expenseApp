@@ -1,10 +1,11 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const sequelize = require("../config/database");
 
 
 const signup = async (req, res) => {
-
+const transaction = await sequelize.transaction();
     try {
 
         const {
@@ -65,9 +66,12 @@ const signup = async (req, res) => {
 
                 password: hashedPassword
 
-            });
+            },
+            {
+                transaction
+        });
 
-
+        await transaction.commit();
         return res.status(201).json({
 
             message:
@@ -87,7 +91,7 @@ const signup = async (req, res) => {
 
 
     } catch (error) {
-
+        await transaction.rollback();
         console.error(
             "Signup error:",
             error
@@ -107,7 +111,7 @@ const signup = async (req, res) => {
 
 
 const login = async (req, res) => {
-
+    
     try {
 
         const {
