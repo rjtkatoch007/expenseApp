@@ -116,6 +116,11 @@ const fetchExpenses = async () => {
             data.expenses
         );
 
+        localStorage.setItem(
+    "expenses",
+    JSON.stringify(data.expenses)
+);
+
 
     } catch (error) {
 
@@ -429,6 +434,19 @@ document.getElementById(
 
         window.location.href =
             "./login.html";
+
+    }
+);
+
+const reportsButton =
+    document.getElementById("reportsButton");
+
+reportsButton.addEventListener(
+    "click",
+    () => {
+
+        window.location.href =
+            "reports.html";
 
     }
 );
