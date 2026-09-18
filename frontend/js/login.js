@@ -1,8 +1,25 @@
+//const axios = require("axios");
+
 const loginForm = document.getElementById("loginForm");
 
 const loginButton = document.getElementById("loginButton");
 
 const message = document.getElementById("message");
+
+const forgotPasswordButton =
+    document.getElementById("forgotPasswordButton");
+
+const forgotPasswordForm =
+    document.getElementById("forgotPasswordForm");
+
+const sendForgotPassword =
+    document.getElementById("sendForgotPassword");
+
+const forgotEmail =
+    document.getElementById("forgotEmail");
+
+const forgotPasswordMessage =
+    document.getElementById("forgotPasswordMessage");
 
 
 loginForm.addEventListener("submit", async (event) => {
@@ -102,3 +119,64 @@ loginForm.addEventListener("submit", async (event) => {
     }
 
 });
+
+forgotPasswordButton.addEventListener("click", () => {
+    forgotPasswordForm.classList.toggle("d-none");
+});
+
+sendForgotPassword.addEventListener("click", async () => {
+
+    const email = forgotEmail.value.trim();
+
+    if (!email) {
+        forgotPasswordMessage.textContent =
+            "Please enter your email address.";
+
+        forgotPasswordMessage.className =
+            "mt-3 mb-0 text-danger";
+
+        return;
+    }
+
+    try {
+
+        sendForgotPassword.disabled = true;
+        sendForgotPassword.textContent = "Sending...";
+
+        const response = await axios.post(
+            "http://localhost:3000/password/forgotpassword",
+            {
+                email: email
+            }
+        );
+
+        forgotPasswordMessage.textContent =
+            response.data.message;
+
+        forgotPasswordMessage.className =
+            "mt-3 mb-0 text-success";
+
+    } catch (error) {
+
+        console.log(
+            "Forgot password error:",
+            error
+        );
+
+        const message =
+            error.response?.data?.message ||
+            "Unable to send email.";
+
+        forgotPasswordMessage.textContent =
+            message;
+
+        forgotPasswordMessage.className =
+            "mt-3 mb-0 text-danger";
+
+    } finally {
+
+        sendForgotPassword.disabled = false;
+        sendForgotPassword.textContent = "Send Email";
+    }
+});
+

@@ -1,13 +1,15 @@
 const express = require("express");
 const cors = require("cors");
-
+const app = express();
+const PORT =
+    process.env.PORT || 3000;
 
 require("dotenv").config();
 
 const sequelize =
     require("./config/database");
 
-
+//Models
 const User =
     require("./models/User");
 
@@ -16,7 +18,7 @@ const Expense =
 
 const Order = require("./models/Order");    
 
-
+//Routes
 const userRoutes =
     require("./routes/userRoutes");
 
@@ -28,13 +30,12 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const premiumRoutes =
     require("./routes/premiumRoutes");
 
-
-const app = express();
-
-const PORT =
-    process.env.PORT || 3000;
+const passwordRoutes = require("./routes/passwordRoutes");    
 
 
+
+
+//Middlewares
 app.use(cors());
 
 app.use(express.json());
@@ -49,7 +50,7 @@ app.use(
     "/premium",
     premiumRoutes
 );
-
+app.use("/password", passwordRoutes);
 
 // Relationships
 
