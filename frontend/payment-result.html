@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Payment Result</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <div id="successAlert" class="alert alert-success d-none">
+            Transaction successful
+        </div>
+
+        <div id="failedAlert" class="alert alert-danger d-none">
+            TRANSACTION FAILED
+        </div>
+
+        <div id="pendingAlert" class="alert alert-warning d-none">
+            Payment is still pending.
+        </div>
+
+        <a href="expense.html" class="btn btn-primary">
+            Back to Expense Tracker
+        </a>
+
+    </div>
+
+
+    <script src="./js/payment-result.js"></script>
+
+</body>
+
+</html>

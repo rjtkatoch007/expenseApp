@@ -1,0 +1,35 @@
+body {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.signup-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 440px;
+  border: 0;
+  border-radius: 16px;
+}
+
+.signup-card h1 {
+  font-weight: 700;
+}
+
+.form-control {
+  min-height: 46px;
+}
+
+.btn {
+  min-height: 46px;
+}
+
+#message:empty {
+  display: none;
+}
