@@ -18,6 +18,8 @@ const Expense =
 
 const Order = require("./models/Order");    
 
+const ForgotPasswordRequest = require("./models/ForgotPasswordRequest");
+
 //Routes
 const userRoutes =
     require("./routes/userRoutes");
@@ -67,6 +69,14 @@ User.hasMany(Order, {
 });
 
 Order.belongsTo(User, {
+    foreignKey: "userId"
+});
+
+User.hasMany(ForgotPasswordRequest, {
+    foreignKey: "userId"
+});
+
+ForgotPasswordRequest.belongsTo(User, {
     foreignKey: "userId"
 });
 
