@@ -76,6 +76,28 @@ leaderboardButton.addEventListener(
     }
 );    
 
+// ==========================================
+// PAGINATION
+// ==========================================
+
+const ITEMS_PER_PAGE = 5;
+
+let currentPage = 1;
+
+let allExpenses = [];
+
+const previousPage =
+    document.getElementById("previousPage");
+
+const nextPage =
+    document.getElementById("nextPage");
+
+const pageNumbers =
+    document.getElementById("pageNumbers");
+
+const paginationContainer =
+    document.getElementById("paginationContainer");
+
 
 // =====================================
 // FETCH EXPENSES
@@ -111,9 +133,13 @@ const fetchExpenses = async () => {
 
         }
 
+        allExpenses = data.expenses || [];
+
+        currentPage = 1;
+
 
         displayExpenses(
-            data.expenses
+            //data.expenses
         );
 
         localStorage.setItem(
@@ -142,7 +168,7 @@ const fetchExpenses = async () => {
 // DISPLAY EXPENSES
 // =====================================
 
-const displayExpenses =
+/* const displayExpenses =
     (expenses) => {
 
 
@@ -209,7 +235,338 @@ const displayExpenses =
         ).join("");
 
 };
+ */
 
+function displayExpenses() {
+
+    expensesContainer.innerHTML = "";
+
+
+    // ======================================
+    // TOTAL PAGES
+    // ======================================
+
+    const totalPages =
+        Math.ceil(
+            allExpenses.length /
+            ITEMS_PER_PAGE
+        );
+
+
+    // ======================================
+    // HANDLE NO EXPENSES
+    // ======================================
+
+    if (allExpenses.length === 0) {
+
+        expensesContainer.innerHTML = `
+            <div class="alert alert-info text-center">
+                No expenses found.
+            </div>
+        `;
+
+        paginationContainer.classList.add(
+            "d-none"
+        );
+
+        return;
+    }
+
+
+    paginationContainer.classList.remove(
+        "d-none"
+    );
+
+
+    // ======================================
+    // MAKE SURE PAGE IS VALID
+    // ======================================
+
+    if (currentPage > totalPages) {
+
+        currentPage = totalPages;
+
+    }
+
+    if (currentPage < 1) {
+
+        currentPage = 1;
+
+    }
+
+
+    // ======================================
+    // START / END INDEX
+    // ======================================
+
+    const startIndex =
+        (currentPage - 1) *
+        ITEMS_PER_PAGE;
+
+    const endIndex =
+        startIndex +
+        ITEMS_PER_PAGE;
+
+
+    // ======================================
+    // GET ONLY 10 EXPENSES
+    // ======================================
+
+    const currentExpenses =
+        allExpenses.slice(
+            startIndex,
+            endIndex
+        );
+
+
+    // ======================================
+    // DISPLAY EXPENSES
+    // ======================================
+
+    currentExpenses.forEach(
+        expense => {
+
+            const expenseElement =
+                document.createElement("div");
+
+
+            expenseElement.className =
+                "card mb-3 shadow-sm";
+
+
+            expenseElement.innerHTML = `
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <h5 class="mb-1">
+                                ${expense.description}
+                            </h5>
+
+                            <p class="text-muted mb-0">
+                                ${expense.category}
+                            </p>
+
+                        </div>
+
+
+                        <div class="text-end">
+
+                            <h5 class="text-danger mb-2">
+                                ₹${Number(
+                                    expense.amount
+                                ).toFixed(2)}
+                            </h5>
+
+                            <button
+                                class="btn btn-danger btn-sm delete-expense"
+                                data-id="${expense.id}"
+                            >
+                                Delete
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            expensesContainer.appendChild(
+                expenseElement
+            );
+
+        }
+    );
+
+
+    // ======================================
+    // DELETE BUTTONS
+    // ======================================
+
+    const deleteButtons =
+        document.querySelectorAll(
+            ".delete-expense"
+        );
+
+
+    deleteButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const expenseId =
+                        button.dataset.id;
+
+                    deleteExpense(
+                        expenseId
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    // ======================================
+    // UPDATE PAGINATION
+    // ======================================
+
+    renderPagination(
+        totalPages
+    );
+
+}
+
+function renderPagination(totalPages) {
+
+    pageNumbers.innerHTML = "";
+
+
+    // ======================================
+    // PREVIOUS BUTTON
+    // ======================================
+
+    previousPage.disabled =
+        currentPage === 1;
+
+
+    // ======================================
+    // NEXT BUTTON
+    // ======================================
+
+    nextPage.disabled =
+        currentPage === totalPages;
+
+
+    // ======================================
+    // PAGE NUMBERS
+    // ======================================
+
+    for (
+        let page = 1;
+        page <= totalPages;
+        page++
+    ) {
+
+        const button =
+            document.createElement("button");
+
+
+        button.type = "button";
+
+        button.textContent = page;
+
+
+        button.className =
+            page === currentPage
+                ? "btn btn-primary"
+                : "btn btn-outline-primary";
+
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                currentPage = page;
+
+                displayExpenses();
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+            }
+        );
+
+
+        pageNumbers.appendChild(
+            button
+        );
+
+    }
+
+}
+
+function renderPagination(totalPages) {
+
+    pageNumbers.innerHTML = "";
+
+
+    // ======================================
+    // PREVIOUS BUTTON
+    // ======================================
+
+    previousPage.disabled =
+        currentPage === 1;
+
+
+    // ======================================
+    // NEXT BUTTON
+    // ======================================
+
+    nextPage.disabled =
+        currentPage === totalPages;
+
+
+    // ======================================
+    // PAGE NUMBERS
+    // ======================================
+
+    for (
+        let page = 1;
+        page <= totalPages;
+        page++
+    ) {
+
+        const button =
+            document.createElement("button");
+
+
+        button.type = "button";
+
+        button.textContent = page;
+
+
+        button.className =
+            page === currentPage
+                ? "btn btn-primary"
+                : "btn btn-outline-primary";
+
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                currentPage = page;
+
+                displayExpenses();
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+            }
+        );
+
+
+        pageNumbers.appendChild(
+            button
+        );
+
+    }
+
+}
 
 
 // =====================================

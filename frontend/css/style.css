@@ -33,3 +33,17 @@ body {
 #message:empty {
   display: none;
 }
+
+//pagination
+#paginationContainer {
+    padding-bottom: 20px;
+}
+
+#pageNumbers button {
+    min-width: 40px;
+}
+
+#previousPage,
+#nextPage {
+    min-width: 90px;
+}
