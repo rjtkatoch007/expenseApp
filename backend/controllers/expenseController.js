@@ -8,7 +8,7 @@ const addExpense = async (req, res) => {
 
     try {
 
-        const {  amount, description } = req.body;
+        const { amount, description, note } = req.body;
 
 
         if (!amount || !description) {
@@ -31,6 +31,8 @@ const addExpense = async (req, res) => {
             amount,
 
             description,
+
+            note,
 
             category,
 
