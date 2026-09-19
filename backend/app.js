@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
 const PORT =
     process.env.PORT || 3000;
 
@@ -34,7 +37,7 @@ const premiumRoutes =
 
 const passwordRoutes = require("./routes/passwordRoutes");    
 
-
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags:'a'});
 
 
 //Middlewares
@@ -53,6 +56,7 @@ app.use(
     premiumRoutes
 );
 app.use("/password", passwordRoutes);
+app.use(morgan('combined', {stream: accessLogStream}));
 
 // Relationships
 
