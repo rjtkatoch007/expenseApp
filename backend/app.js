@@ -23,6 +23,8 @@ const Order = require("./models/Order");
 
 const ForgotPasswordRequest = require("./models/ForgotPasswordRequest");
 
+const DownloadHistory = require("./models/DownloadHistory");
+
 //Routes
 const userRoutes =
     require("./routes/userRoutes");
@@ -38,6 +40,8 @@ const premiumRoutes =
 const passwordRoutes = require("./routes/passwordRoutes");    
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags:'a'});
+
+const downloadRoutes = require("./routes/downloadRoutes");
 
 
 //Middlewares
@@ -84,6 +88,14 @@ ForgotPasswordRequest.belongsTo(User, {
     foreignKey: "userId"
 });
 
+User.hasMany(DownloadHistory, {
+    foreignKey: "userId"
+});
+
+DownloadHistory.belongsTo(User, {
+    foreignKey: "userId"
+});
+
 
 // Test route
 
@@ -112,6 +124,8 @@ app.use(
 );
 
 app.use("/payment", paymentRoutes);
+
+app.use("/download", downloadRoutes);
 // Start server
 
 const startServer = async () => {

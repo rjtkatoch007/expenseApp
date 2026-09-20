@@ -13,6 +13,9 @@ const user =
 const premiumMessage =
     document.getElementById("premiumMessage");
 
+const downloadResult =
+    document.getElementById("downloadResult");    
+
 
 if (user && user.isPremium) {
 
@@ -28,7 +31,6 @@ if (!token || !user) {
         "./login.html";
 
 }
-
 
 // Display user name
 
@@ -99,11 +101,23 @@ let allExpenses = [];
 // GET CURRENT USER
 // ==========================================
 
-const loggedInUser =
+/* const loggedInUser =
     JSON.parse(
         localStorage.getItem("user")
     );
+ */
+const downloadExpensesButton =
+    document.getElementById("downloadExpensesButton");    
 
+const loggedInUser =
+    JSON.parse(localStorage.getItem("user"));
+
+if (!loggedInUser || !loggedInUser.isPremium) {
+    downloadExpensesButton.disabled = true;
+
+    downloadExpensesButton.textContent =
+        "Premium Only";
+}    
 
 // ==========================================
 // USER-SPECIFIC LOCAL STORAGE KEY
@@ -940,7 +954,7 @@ premiumButton.addEventListener("click", async () => {
             localStorage.getItem("token");
 
         const response = await fetch(
-            "http://localhost:3000/payment/create-order",
+            `${API_URL}/payment/create-order`,
             {
                 method: "POST",
 
@@ -979,6 +993,153 @@ premiumButton.addEventListener("click", async () => {
     }
 });
 
+//Download Expenses
+
+downloadExpensesButton.addEventListener("click", async () => {
+    try {
+        const token = localStorage.getItem("token");
+
+        downloadExpensesButton.disabled = true;
+        downloadExpensesButton.textContent = "Generating file...";
+
+        const response = await fetch(
+            `${API_URL}/download/expenses`,
+            {
+                method: "GET",
+
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.status === 401) {
+            downloadResult.innerHTML = `
+                <div class="alert alert-warning">
+                    ${data.message}
+                </div>
+            `;
+
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || data.message || "Unable to generate file"
+            );
+        }
+
+        downloadResult.innerHTML = `
+            <div class="alert alert-success">
+                Expense file generated successfully.
+                <br>
+                <a
+                    href="${data.fileUrl}"
+                    target="_blank"
+                    class="btn btn-primary mt-2"
+                >
+                    Download File
+                </a>
+            </div>
+        `;
+
+    } catch (error) {
+
+        console.error("Download error:", error);       
+
+        downloadResult.innerHTML = `
+            <div class="alert alert-danger">
+                Unable to generate expense file.
+            </div>
+        `;
+
+    } finally {
+
+        downloadExpensesButton.disabled = false;
+        downloadExpensesButton.textContent =
+            "Download Expenses";
+    }
+});
+
+const loadDownloadHistory = async () => {
+    try {
+
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+            `${API_URL}/download/history`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return;
+        }
+
+        const historyContainer =
+            document.getElementById("downloadHistory");
+
+        if (!data.downloads || data.downloads.length === 0) {
+
+            historyContainer.innerHTML = `
+                <p class="text-muted">
+                    No previous downloads.
+                </p>
+            `;
+
+            return;
+        }
+
+        historyContainer.innerHTML =
+            data.downloads.map((download) => {
+
+                const date =
+                    new Date(download.downloadedAt)
+                        .toLocaleString();
+
+                return `
+                    <div class="card mb-2">
+                        <div class="card-body">
+
+                            <h6 class="mb-1">
+                                ${download.fileName}
+                            </h6>
+
+                            <p class="text-muted mb-2">
+                                Downloaded on: ${date}
+                            </p>
+
+                            <a
+                                href="${download.fileUrl}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                Download Again
+                            </a>
+
+                        </div>
+                    </div>
+                `;
+
+            }).join("");
+
+    } catch (error) {
+
+        console.error(
+            "Download history error:",
+            error
+        );
+    }
+};
+loadDownloadHistory();
 // Load old expenses when page opens
 
 fetchExpenses();

@@ -1,6 +1,7 @@
 const { Cashfree } = require("cashfree-pg");
 const Order = require("../models/Order");
 const User = require("../models/User");
+const sequelize = require("../config/database");
 
 
 const mode =
@@ -184,7 +185,7 @@ const getPaymentStatus = async (req, res) => {
                 message: "Transaction successful"
             });
         }
-
+        //await transaction.commit();
 
         // PAYMENT FAILED
         if (failedPayment) {
@@ -207,10 +208,10 @@ const getPaymentStatus = async (req, res) => {
             status: "PENDING",
             message: "Payment is still pending"
         });
-        await transaction.commit();
+        
 
     } catch (error) {
-        await transaction.rollback();
+        //await transaction.rollback();
         console.log(
             "Payment status error:",
             error.response?.data || error.message
